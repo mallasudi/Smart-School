@@ -11,6 +11,18 @@ import {
 
 import { studentGetResults } from "../controllers/studentResultController.js";
 import { studentGetTermResult } from "../controllers/studentResultController.js";
+import { getStudentAttendanceSummary } from "../controllers/attendanceController.js";
+
+import { getStudentMaterials } from "../controllers/materialController.js";
+
+import upload from "../utils/upload.js";
+import {
+  studentListAssignments,
+  submitAssignment,
+  studentMySubmission
+} from "../controllers/assignmentController.js";
+
+import { studentListFees } from "../controllers/feeController.js";
 
 const router = express.Router();
 
@@ -67,5 +79,16 @@ router.put("/profile", updateStudentProfile);
 
 router.get("/results", studentGetResults);
 router.get("/results/term/:term", studentGetTermResult);
+
+router.get("/attendance/summary", getStudentAttendanceSummary);
+
+router.get("/materials", getStudentMaterials);
+
+// ASSIGNMENTS
+router.get("/assignments", studentListAssignments);
+router.get("/assignments/:id/mysubmission", studentMySubmission);
+router.post("/assignments/:id/submit", upload.single("file"), submitAssignment);
+
+router.get("/fees", studentListFees);
 
 export default router;

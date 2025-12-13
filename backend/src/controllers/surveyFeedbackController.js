@@ -24,6 +24,7 @@ export const parentSubmitSurveyFeedback = async (req, res) => {
         teaching_effective: req.body.teachingEffective ?? null,
         suggestions: req.body.suggestions ?? null,
         additional_feedback: req.body.additionalFeedback ?? null,
+        created_at: new Date(),   // 🔥 FIX ADDED
       },
     });
 
@@ -44,13 +45,25 @@ export const parentSubmitSurveyFeedback = async (req, res) => {
 export const adminListSurveyFeedback = async (req, res) => {
   try {
     const feedbacks = await prisma.parentSurveyFeedback.findMany({
-      orderBy: { created_at: "desc" },
-      include: { parent: true },
+      include: {
+        parent: {
+          select: {
+            user_id: true,
+            email: true,
+            username: true,
+          }
+        },
+      },
+      orderBy: { created_at: "desc" }, // works now because default exists
     });
 
-    return res.json(feedbacks); // ARRAY ONLY
+    return res.json({ success: true, feedbacks });
   } catch (err) {
-    console.error("ADMIN LIST SURVEY FEEDBACK ERROR:", err);
-    return res.status(500).json({ message: "Failed to load survey feedback" });
+    console.error("ADMIN SURVEY FEEDBACK ERROR:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to load survey feedback.",
+    });
   }
 };
+

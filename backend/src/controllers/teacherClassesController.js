@@ -6,7 +6,7 @@ import { prisma } from "../utils/prisma.js";
    - Uses exam.teacher_id to find classes this teacher handles
 ========================================================= */
 export const getTeacherClasses = async (req, res) => {
-  console.log("🔥 getTeacherClasses CALLED");
+  console.log(" getTeacherClasses CALLED");
 
   try {
     const teacherUserId = req.user.id;
@@ -36,7 +36,7 @@ export const getTeacherClasses = async (req, res) => {
 
     return res.json(classes);
   } catch (error) {
-    console.error("❌ ERROR GETTING TEACHER CLASSES:", error);
+    console.error(" ERROR GETTING TEACHER CLASSES:", error);
     res.status(500).json({ message: "Failed to load classes" });
   }
 };
@@ -45,11 +45,6 @@ export const getTeacherClasses = async (req, res) => {
 /* =========================================================
    2. TERM-WISE RESULTS FOR A CLASS (TEACHER VIEW)
    Route: GET /teacher/results/class/:classId/term/:term
-
-   IMPORTANT CHANGE:
-   ❌ Do NOT filter by teacher_id anymore.
-   ✅ Just show the full class + term result (same as admin),
-      so the page ALWAYS works.
 ========================================================= */
 export const teacherGetTermResults = async (req, res) => {
   try {
@@ -148,5 +143,40 @@ export const teacherGetTermResults = async (req, res) => {
   } catch (err) {
     console.error("TEACHER TERM RESULT ERROR:", err);
     res.status(500).json({ message: "Failed to load term results" });
+  }
+};
+
+/* =========================================================
+   3. GET STUDENTS OF A CLASS FOR TEACHER
+   Route: GET /teacher/class/:classId/students
+========================================================= */
+export const getTeacherClassStudents = async (req, res) => {
+  try {
+    const teacherUserId = req.user.id;
+
+    const teacher = await prisma.teacher.findUnique({
+      where: { user_id: teacherUserId },
+    });
+
+    if (!teacher) {
+      return res.status(404).json({ message: "Teacher not found" });
+    }
+
+    const classId = Number(req.params.classId);
+
+    const students = await prisma.student.findMany({
+      where: { class_id: classId },
+      select: {
+        student_id: true,
+        first_name: true,
+        last_name: true,
+      },
+      orderBy: { student_id: "asc" }
+    });
+
+    return res.json(students);
+  } catch (err) {
+    console.error("ERROR LOADING CLASS STUDENTS:", err);
+    return res.status(500).json({ message: "Failed to load class students" });
   }
 };

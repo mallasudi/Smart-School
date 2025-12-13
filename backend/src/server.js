@@ -12,11 +12,7 @@ import noticeRoutes from "./routes/noticeRoutes.js";
 import subjectRoutes from "./routes/subjectRoutes.js";
 import morgan from "morgan";
 
-
-
-
-// ⭐ NEW — Teacher Exam Management routes
-//import teacherExamRoutes from "./routes/teacherExamRoutes.js";
+import attendanceRoutes from "./routes/attendanceRoutes.js";
 
 dotenv.config();
 
@@ -54,9 +50,8 @@ app.use("/api/notices", noticeRoutes);
 
 app.use("/api/subjects", subjectRoutes);
 
+app.use("/api/attendance", attendanceRoutes);
 
-//  NEW — Teacher Exam System
-//app.use("/api/teacher/exams", teacherExamRoutes);
 
 /* ---------------------------------------
    404 HANDLER

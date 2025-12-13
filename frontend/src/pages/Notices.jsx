@@ -57,7 +57,7 @@ export default function Notices() {
   ===================================================== */
   const handleSave = async (e) => {
     e.preventDefault();
-    const form = e.currentTarget; // 🔥 FIXED — NEVER use e.target
+    const form = e.currentTarget; 
 
     const payload = {
       title: form.title.value.trim(),

@@ -138,7 +138,7 @@ export default function ExamsAdmin() {
       return;
     }
 
-    const class_id = chosenSubject.class_id; // 👈 class comes from subject
+    const class_id = chosenSubject.class_id; //  class comes from subject
 
     const payload = {
       title,

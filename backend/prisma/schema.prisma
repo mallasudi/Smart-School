@@ -12,18 +12,18 @@ datasource db {
 /// * USER TABLE
 /// * ======================================================
 model User {
-  user_id          Int                    @id @default(autoincrement())
-  username         String                 @unique
-  password         String
-  email            String                 @unique
-  role             String
-  status           String                 @default("Active")
-  created_at       DateTime               @default(now())
-  feedbackMessages FeedbackMessage[]
-  parent           Parent?
-  surveyFeedbacks  ParentSurveyFeedback[]
-  student          Student?
-  teacher          Teacher?
+  user_id           Int                    @id @default(autoincrement())
+  username          String                 @unique
+  password          String
+  email             String                 @unique
+  role              String
+  status            String                 @default("Active")
+  created_at        DateTime               @default(now())
+  feedback_messages feedback_messages[]
+  parent            Parent?
+  surveyFeedbacks   ParentSurveyFeedback[]
+  student           Student?
+  teacher           Teacher?
 
   @@map("users")
 }
@@ -75,7 +75,7 @@ model Student {
   address     String?
   phone       String?
   class_id    Int?
-  attendance  Attendance[]
+  attendance  attendance[]
   fees        Fee[]
   results     Result[]
   class       Class?       @relation(fields: [class_id], references: [class_id])
@@ -120,6 +120,7 @@ model Subject {
   class_id    Int
   teacher_id  Int?
   assignments Assignment[]
+  attendance  attendance[]
   exams       Exam[]
   materials   Material[]
   class       Class        @relation(fields: [class_id], references: [class_id], onDelete: Cascade)
@@ -257,21 +258,6 @@ model Result {
 
 /// *
 /// * ======================================================
-/// * ATTENDANCE
-/// * ======================================================
-model Attendance {
-  attendance_id Int      @id @default(autoincrement())
-  student_id    Int
-  date          DateTime
-  status        String
-  student       Student  @relation(fields: [student_id], references: [student_id], onDelete: Cascade)
-
-  @@unique([student_id, date])
-  @@map("attendance")
-}
-
-/// *
-/// * ======================================================
 /// * FEE
 /// * ======================================================
 model Fee {
@@ -312,26 +298,6 @@ model Notice {
   @@map("notice")
 }
 
-/// *
-/// * ======================================================
-/// * FEEDBACK
-/// * ======================================================
-model FeedbackMessage {
-  id          Int       @id @default(autoincrement())
-  sender_id   Int
-  child_label String?
-  receiver    String
-  subject     String
-  message     String    @db.Text
-  priority    String?   @default("Normal")
-  send_copy   Boolean?  @default(false)
-  created_at  DateTime? @default(now())
-  sender      User      @relation(fields: [sender_id], references: [user_id], onDelete: Cascade, onUpdate: Restrict, map: "fk_feedback_sender")
-
-  @@index([sender_id], map: "fk_feedback_sender")
-  @@map("feedback_messages")
-}
-
 model ParentSurveyFeedback {
   id                    Int       @id @default(autoincrement())
   parent_id             Int
@@ -347,7 +313,7 @@ model ParentSurveyFeedback {
   teaching_effective    String?
   suggestions           String?   @db.Text
   additional_feedback   String?   @db.Text
-  created_at            DateTime? @default(now())
+  created_at DateTime @default(now())
   parent                User      @relation(fields: [parent_id], references: [user_id], onDelete: Cascade, onUpdate: Restrict, map: "fk_survey_parent")
 
   @@index([parent_id], map: "fk_survey_parent")
@@ -360,4 +326,33 @@ model gradescale {
   max   Int
   grade String
   gpa   Float
+}
+
+model feedback_messages {
+  id          Int       @id @default(autoincrement())
+  sender_id   Int
+  child_label String?
+  receiver    String
+  subject     String
+  message     String    @db.Text
+  priority    String?
+  send_copy   Boolean?
+  created_at  DateTime? @db.DateTime(0)
+  users       User      @relation(fields: [sender_id], references: [user_id], onDelete: Cascade, onUpdate: Restrict, map: "fk_feedback_sender")
+
+  @@index([sender_id], map: "fk_feedback_sender")
+}
+
+model attendance {
+  attendance_id Int      @id @default(autoincrement())
+  student_id    Int
+  date          DateTime
+  status        String
+  subject_id    Int
+  student       Student  @relation(fields: [student_id], references: [student_id], onDelete: Cascade)
+  subject       Subject  @relation(fields: [subject_id], references: [subject_id], onDelete: Cascade)
+
+  @@unique([student_id, date])
+  @@unique([student_id, subject_id, date], map: "attendance_unique")
+  @@index([subject_id], map: "attendance_subject_id_fkey")
 }

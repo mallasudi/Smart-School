@@ -112,3 +112,79 @@ export const assignSubjectToTeacher = async (req, res) => {
     res.status(500).json({ message: "Failed to assign subject" });
   }
 };
+
+export const getStudentsOfTeacherClass = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const class_id = Number(req.params.class_id);
+
+    // find teacher
+    const teacher = await prisma.teacher.findUnique({
+      where: { user_id: userId },
+      include: { subjects: true },
+    });
+
+    if (!teacher) {
+      return res.status(404).json({ message: "Teacher not found" });
+    }
+
+    // verify teacher actually teaches this class
+    const teachesClass = await prisma.subject.findFirst({
+      where: {
+        class_id,
+        teacher_id: teacher.teacher_id,
+      },
+    });
+
+    if (!teachesClass) {
+      return res
+        .status(403)
+        .json({ message: "You cannot access this class' students" });
+    }
+
+    // fetch students of this class
+    const students = await prisma.student.findMany({
+      where: { class_id },
+      select: {
+        student_id: true,
+        first_name: true,
+        last_name: true,
+      },
+    });
+
+    return res.json(students);
+  } catch (err) {
+    console.error("FETCH CLASS STUDENTS ERROR:", err);
+    return res.status(500).json({ message: "Failed to load students" });
+  }
+};
+export const getTeacherSubjectForClass = async (req, res) => {
+  try {
+    const teacherUserId = req.user.id;
+    const classId = Number(req.params.classId);
+
+    const teacher = await prisma.teacher.findUnique({
+      where: { user_id: teacherUserId },
+    });
+
+    if (!teacher) {
+      return res.status(404).json({ message: "Teacher not found" });
+    }
+
+    const subject = await prisma.subject.findFirst({
+      where: {
+        class_id: classId,
+        teacher_id: teacher.teacher_id,
+      },
+      select: {
+        subject_id: true,
+        name: true,
+      },
+    });
+
+    return res.json(subject || null);
+  } catch (err) {
+    console.error("ERROR GETTING SUBJECT FOR CLASS:", err);
+    return res.status(500).json({ message: "Failed to load subject" });
+  }
+};

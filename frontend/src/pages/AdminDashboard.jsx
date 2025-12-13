@@ -2,9 +2,9 @@ import { useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { motion } from "framer-motion"
 import Users from "./Users"
-import Attendance from "./Attendance"
+import Attendance from "./AdminAttendance"
 import ExamsResults from "./ExamsResults"
-import Fees from "./Fees"
+import Fees from "./AdminFees"
 import Notices from "./Notices"
 import Reports from "./Reports"
 import EventCalendar from "./EventCalendar"
@@ -347,4 +347,3 @@ function DashboardScreen({ date, setDate, COLORS, setActive }) {
     </div>
   )
 }
-//admin@smartschool.com--admin123//

@@ -1,48 +1,107 @@
-// src/pages/ParentAttendance.jsx
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
+import axios from "axios";
 import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  BarChart, Bar
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
 } from "recharts";
 import { FiCalendar, FiSearch, FiDownload } from "react-icons/fi";
 
-const rawDaily = [
-  { date: "2025-09-22", status: "Present" },
-  { date: "2025-09-23", status: "Late" },
-  { date: "2025-09-24", status: "Absent" },
-  { date: "2025-09-25", status: "Present" },
-  { date: "2025-09-26", status: "Present" },
-];
-
-const weekly = [
-  { wk: "Wk1", percent: 92 },
-  { wk: "Wk2", percent: 88 },
-  { wk: "Wk3", percent: 95 },
-  { wk: "Wk4", percent: 90 },
-];
-
 export default function ParentAttendance() {
+  const token = localStorage.getItem("token");
+
+  const [child, setChild] = useState(null); // linked student
+  const [records, setRecords] = useState([]); // daily attendance
   const [query, setQuery] = useState("");
 
+  /* ============================================================
+      LOAD ATTENDANCE FOR LINKED CHILD
+  ============================================================ */
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const res = await axios.get("/api/parent/attendance/summary", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        // We use the FIRST linked child (your system has 1 child per parent)
+        const s = res.data[0];
+
+        if (s) {
+          setChild(s);
+          setRecords(
+            s.records.map((r) => ({
+              date: r.date.split("T")[0],
+              status: r.status,
+            }))
+          );
+        }
+      } catch (err) {
+        console.error("FAILED TO LOAD PARENT ATTENDANCE:", err);
+      }
+    };
+
+    loadData();
+  }, [token]);
+
+  /* ============================================================
+      FILTER SEARCH (Date or Status)
+  ============================================================ */
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return rawDaily;
-    return rawDaily.filter(
-      (r) => r.date.includes(q) || r.status.toLowerCase().includes(q)
+    if (!q) return records;
+    return records.filter(
+      (r) =>
+        r.date.toLowerCase().includes(q) ||
+        r.status.toLowerCase().includes(q)
     );
-  }, [query]);
+  }, [query, records]);
+
+  /* ============================================================
+      STATUS DISTRIBUTION
+  ============================================================ */
+  const statusCount = useMemo(() => {
+    return {
+      Present: records.filter((r) => r.status === "Present").length,
+      Late: records.filter((r) => r.status === "Late").length,
+      Absent: records.filter((r) => r.status === "Absent").length,
+    };
+  }, [records]);
+
+  /* ============================================================
+      WEEKLY TREND - Simple example
+  ============================================================ */
+  const weeklyTrend = [
+    { wk: "Wk1", percent: 1 },
+    { wk: "Wk2", percent: 1 },
+    { wk: "Wk3", percent: 1 },
+    { wk: "Wk4", percent: 1 },
+  ];
+
+  if (!child) {
+    return (
+      <div className="text-center text-gray-500 p-8">
+        Loading attendance…
+      </div>
+    );
+  }
 
   return (
     <motion.div
       className="space-y-8"
-      initial={{ opacity: 0, y: 30 }}
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
     >
-      {/* Header */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
+      {/* HEADER */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <h2 className="text-2xl font-bold flex items-center gap-2">
           <FiCalendar className="text-cyan-500" />
           Attendance Overview
         </h2>
@@ -54,36 +113,40 @@ export default function ParentAttendance() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search date or status…"
-              className="pl-9 pr-3 py-2 rounded-lg border border-gray-300 dark:border-slate-700 bg-white/70 dark:bg-slate-800 text-gray-700 dark:text-gray-200 shadow-sm focus:ring-2 focus:ring-cyan-500 outline-none"
+              className="pl-9 pr-3 py-2 rounded-lg border bg-white shadow-sm"
             />
           </div>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow hover:shadow-lg transition"
-          >
+          <button className="px-4 py-2 rounded bg-blue-600 text-white flex items-center gap-2">
             <FiDownload /> Export
-          </motion.button>
+          </button>
         </div>
       </div>
 
-      {/* Charts */}
+      {/* CHILD SUMMARY */}
+      <div className="bg-white shadow p-4 rounded-xl">
+        <h3 className="font-semibold text-lg">
+          {child.first_name} {child.last_name}
+        </h3>
+        <p className="text-gray-500 text-sm">
+          Total: {child.total} | Present: {child.present} | Late:{" "}
+          {child.late} | Absent: {child.absent}
+        </p>
+      </div>
+
+      {/* CHARTS */}
       <div className="grid xl:grid-cols-2 gap-6">
-        <motion.div
-          whileHover={{ scale: 1.02 }}
-          className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-gray-100 dark:border-slate-700"
-        >
-          <h3 className="font-semibold mb-3 text-gray-800 dark:text-gray-100">
-            Weekly Attendance %
-          </h3>
+        {/* WEEKLY TREND */}
+        <div className="bg-white p-6 rounded-xl shadow">
+          <h3 className="font-semibold mb-3">Weekly Attendance %</h3>
           <ResponsiveContainer width="100%" height={250}>
-            <AreaChart data={weekly}>
+            <AreaChart data={weeklyTrend}>
               <defs>
                 <linearGradient id="colorAttendance" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.8} />
                   <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.2} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#ccc" />
+              <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="wk" />
               <YAxis />
               <Tooltip />
@@ -92,89 +155,73 @@ export default function ParentAttendance() {
                 dataKey="percent"
                 stroke="#06b6d4"
                 fill="url(#colorAttendance)"
-                strokeWidth={3}
               />
             </AreaChart>
           </ResponsiveContainer>
-        </motion.div>
+        </div>
 
-        <motion.div
-          whileHover={{ scale: 1.02 }}
-          className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-gray-100 dark:border-slate-700"
-        >
-          <h3 className="font-semibold mb-3 text-gray-800 dark:text-gray-100">
-            Status Distribution (This Month)
-          </h3>
+        {/* STATUS DISTRIBUTION */}
+        <div className="bg-white p-6 rounded-xl shadow">
+          <h3 className="font-semibold mb-3">Status Distribution</h3>
           <ResponsiveContainer width="100%" height={250}>
             <BarChart
               data={[
-                { name: "Present", value: 18 },
-                { name: "Late", value: 2 },
-                { name: "Absent", value: 1 },
+                { name: "Present", value: statusCount.Present },
+                { name: "Late", value: statusCount.Late },
+                { name: "Absent", value: statusCount.Absent },
               ]}
             >
-              <CartesianGrid strokeDasharray="3 3" stroke="#ccc" />
+              <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
               <YAxis allowDecimals={false} />
               <Tooltip />
-              <Bar
-                dataKey="value"
-                fill="#10b981"
-                radius={[8, 8, 0, 0]}
-                barSize={50}
-              />
+              <Bar dataKey="value" fill="#10b981" barSize={40} />
             </BarChart>
           </ResponsiveContainer>
-        </motion.div>
+        </div>
       </div>
 
-      {/* Table */}
-      <motion.div
-        whileHover={{ scale: 1.01 }}
-        className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-gray-100 dark:border-slate-700"
-      >
-        <h3 className="font-semibold mb-4 text-gray-800 dark:text-gray-100">
-          Daily Records
-        </h3>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead className="bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-200">
+      {/* DAILY RECORDS */}
+      <div className="bg-white p-6 rounded-xl shadow">
+        <h3 className="font-semibold mb-3">Daily Records</h3>
+
+        <table className="w-full text-left border-collapse">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="p-3">Date</th>
+              <th className="p-3">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.length === 0 ? (
               <tr>
-                <th className="p-3">Date</th>
-                <th className="p-3">Status</th>
+                <td colSpan={2} className="text-center text-gray-500 p-4">
+                  No records found
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {filtered.map((r) => (
-                <motion.tr
-                  key={r.date}
-                  className="border-t border-gray-200 dark:border-slate-700"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <td className="p-3 text-gray-800 dark:text-gray-200">
-                    {r.date}
-                  </td>
+            ) : (
+              filtered.map((r, i) => (
+                <tr key={i} className="border-t">
+                  <td className="p-3">{r.date}</td>
                   <td className="p-3">
                     <span
                       className={`px-2 py-1 rounded text-sm font-medium ${
                         r.status === "Present"
-                          ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30"
+                          ? "bg-green-100 text-green-700"
                           : r.status === "Late"
-                          ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30"
-                          : "bg-rose-100 text-rose-700 dark:bg-rose-900/30"
+                          ? "bg-yellow-100 text-yellow-700"
+                          : "bg-red-100 text-red-700"
                       }`}
                     >
                       {r.status}
                     </span>
                   </td>
-                </motion.tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </motion.div>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
     </motion.div>
   );
 }

@@ -73,7 +73,6 @@ export default function TeacherDashboard() {
             ["Attendance", "attendance"],
             ["Grades", "grades"],
             ["Assignments", "assignments"],
-            ["Performance", "performance"],
             ["Materials", "materials"],
             ["Exam Marks", "examMarks"],
             ["Notices", "notices"],
@@ -221,7 +220,6 @@ export default function TeacherDashboard() {
         {activeTab === "attendance" && <TeacherAttendance />}
         {activeTab === "grades" && <TeacherGrades />}
         {activeTab === "assignments" && <TeacherAssignments />}
-        {activeTab === "performance" && <TeacherPerformance />}
         {activeTab === "materials" && <TeacherMaterials />}
         {activeTab === "examMarks" && <TeacherExamMarks />}
         {activeTab === "notices" && <TeacherNotices />}

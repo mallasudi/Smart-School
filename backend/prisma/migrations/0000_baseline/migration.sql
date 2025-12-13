@@ -134,24 +134,13 @@ CREATE TABLE `exam` (
     `title` VARCHAR(191) NOT NULL,
     `exam_date` DATETIME(3) NOT NULL,
     `total_marks` INTEGER NOT NULL,
-    `term` VARCHAR(191) NOT NULL DEFAULT 'First Term Exam',
     `status` VARCHAR(191) NOT NULL DEFAULT 'Upcoming',
+    `term` VARCHAR(191) NOT NULL DEFAULT 'First Term Exam',
 
     INDEX `exam_class_id_fkey`(`class_id`),
     INDEX `exam_subject_id_fkey`(`subject_id`),
     INDEX `exam_teacher_id_fkey`(`teacher_id`),
     PRIMARY KEY (`exam_id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `GradeScale` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `min` INTEGER NOT NULL,
-    `max` INTEGER NOT NULL,
-    `grade` VARCHAR(191) NOT NULL,
-    `gpa` DOUBLE NOT NULL,
-
-    PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -185,13 +174,14 @@ CREATE TABLE `result` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `attendance` (
+CREATE TABLE `Attendance` (
     `attendance_id` INTEGER NOT NULL AUTO_INCREMENT,
     `student_id` INTEGER NOT NULL,
+    `subject_id` INTEGER NOT NULL,
     `date` DATETIME(3) NOT NULL,
     `status` VARCHAR(191) NOT NULL,
 
-    UNIQUE INDEX `attendance_student_id_date_key`(`student_id`, `date`),
+    UNIQUE INDEX `Attendance_student_id_subject_id_date_key`(`student_id`, `subject_id`, `date`),
     PRIMARY KEY (`attendance_id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -213,29 +203,14 @@ CREATE TABLE `notice` (
     `notice_id` INTEGER NOT NULL AUTO_INCREMENT,
     `title` VARCHAR(191) NOT NULL,
     `message` VARCHAR(191) NOT NULL,
-    `notice_date` DATETIME(3) NULL,
-    `status` VARCHAR(191) NOT NULL DEFAULT 'Active',
+    `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `target` VARCHAR(191) NOT NULL,
     `class_id` INTEGER NULL,
     `exam_id` INTEGER NULL,
-    `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `notice_date` DATETIME(3) NULL,
+    `status` VARCHAR(191) NOT NULL DEFAULT 'Active',
 
     PRIMARY KEY (`notice_id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `feedback_messages` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `sender_id` INTEGER NOT NULL,
-    `child_label` VARCHAR(191) NULL,
-    `receiver` VARCHAR(191) NOT NULL,
-    `subject` VARCHAR(191) NOT NULL,
-    `message` VARCHAR(191) NOT NULL,
-    `priority` VARCHAR(191) NOT NULL DEFAULT 'Normal',
-    `send_copy` BOOLEAN NOT NULL DEFAULT false,
-    `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-
-    PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -252,10 +227,38 @@ CREATE TABLE `parent_survey_feedback` (
     `child_safety` VARCHAR(191) NULL,
     `extracurricular_level` VARCHAR(191) NULL,
     `teaching_effective` VARCHAR(191) NULL,
-    `suggestions` VARCHAR(191) NULL,
-    `additional_feedback` VARCHAR(191) NULL,
-    `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `suggestions` TEXT NULL,
+    `additional_feedback` TEXT NULL,
+    `created_at` DATETIME(3) NULL DEFAULT CURRENT_TIMESTAMP(3),
 
+    INDEX `fk_survey_parent`(`parent_id`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `gradescale` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `min` INTEGER NOT NULL,
+    `max` INTEGER NOT NULL,
+    `grade` VARCHAR(191) NOT NULL,
+    `gpa` DOUBLE NOT NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `feedback_messages` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `sender_id` INTEGER NOT NULL,
+    `child_label` VARCHAR(191) NULL,
+    `receiver` VARCHAR(191) NOT NULL,
+    `subject` VARCHAR(191) NOT NULL,
+    `message` TEXT NOT NULL,
+    `priority` VARCHAR(191) NULL DEFAULT 'Normal',
+    `send_copy` BOOLEAN NULL DEFAULT false,
+    `created_at` DATETIME(3) NULL DEFAULT CURRENT_TIMESTAMP(3),
+
+    INDEX `fk_feedback_sender`(`sender_id`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -317,14 +320,17 @@ ALTER TABLE `result` ADD CONSTRAINT `result_exam_id_fkey` FOREIGN KEY (`exam_id`
 ALTER TABLE `result` ADD CONSTRAINT `result_student_id_fkey` FOREIGN KEY (`student_id`) REFERENCES `student`(`student_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `attendance` ADD CONSTRAINT `attendance_student_id_fkey` FOREIGN KEY (`student_id`) REFERENCES `student`(`student_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `Attendance` ADD CONSTRAINT `Attendance_student_id_fkey` FOREIGN KEY (`student_id`) REFERENCES `student`(`student_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Attendance` ADD CONSTRAINT `Attendance_subject_id_fkey` FOREIGN KEY (`subject_id`) REFERENCES `subject`(`subject_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `fee` ADD CONSTRAINT `fee_student_id_fkey` FOREIGN KEY (`student_id`) REFERENCES `student`(`student_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `feedback_messages` ADD CONSTRAINT `feedback_messages_sender_id_fkey` FOREIGN KEY (`sender_id`) REFERENCES `users`(`user_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `parent_survey_feedback` ADD CONSTRAINT `fk_survey_parent` FOREIGN KEY (`parent_id`) REFERENCES `users`(`user_id`) ON DELETE CASCADE ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `parent_survey_feedback` ADD CONSTRAINT `parent_survey_feedback_parent_id_fkey` FOREIGN KEY (`parent_id`) REFERENCES `users`(`user_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `feedback_messages` ADD CONSTRAINT `fk_feedback_sender` FOREIGN KEY (`sender_id`) REFERENCES `users`(`user_id`) ON DELETE CASCADE ON UPDATE RESTRICT;
 

@@ -1,181 +1,186 @@
 // src/pages/ParentFees.jsx
+import { useEffect, useState } from "react";
+import axios from "axios";
 import { motion } from "framer-motion";
-import {
-  FiCreditCard,
-  FiDownload,
-  FiInfo,
-  FiDollarSign,
-  FiTrendingUp,
-} from "react-icons/fi";
-
-const dues = [
-  { month: "Aug 2025", amount: 2500, status: "Paid", mode: "Khalti" },
-  { month: "Sep 2025", amount: 2500, status: "Unpaid", mode: "-" },
-  { month: "Oct 2025", amount: 2500, status: "Unpaid", mode: "-" },
-];
+import { FiCreditCard, FiDownload, FiInfo } from "react-icons/fi";
 
 export default function ParentFees() {
-  const pay = (m) =>
-    alert(`💳 Mock: Redirecting to eSewa/Khalti gateway for ${m} ✅`);
-  const receipt = (m) => alert(`📄 Mock: Downloading receipt for ${m} ✅`);
+  const [fees, setFees] = useState([]);
+  const token = localStorage.getItem("token");
 
-  const totalDue = dues
-    .filter((d) => d.status === "Unpaid")
-    .reduce((s, d) => s + d.amount, 0);
+  // Fetch fees for linked student
+  const loadFees = async () => {
+    try {
+      const res = await axios.get("/api/parent/fees", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setFees(res.data);
+    } catch (err) {
+      console.error("LOAD FEES ERROR:", err);
+    }
+  };
+
+  // Mock payment (no real gateway)
+  const payNow = async (fee_id) => {
+    try {
+      await axios.post(
+        `/api/parent/fees/pay/${fee_id}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      alert("Mock payment successful!");
+      loadFees();
+    } catch (err) {
+      console.error("PAY ERROR:", err);
+    }
+  };
+
+  useEffect(() => {
+    loadFees();
+  }, []);
+
+  // Summary Calculations
+  const totalDue = fees
+    .filter((f) => f.status === "Unpaid")
+    .reduce((sum, f) => sum + f.amount, 0);
+
+  const lastPaid = fees
+    .filter((f) => f.status === "Paid")
+    .sort((a, b) => new Date(b.paid_at) - new Date(a.paid_at))[0];
 
   return (
     <motion.div
       className="space-y-8"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
+      transition={{ duration: 0.5 }}
     >
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
-          <FiDollarSign className="text-cyan-500" />
-          Fee Payment Overview
-        </h2>
-        <span className="text-sm text-gray-500 dark:text-gray-400">
-          Academic Year: <strong>2025–2026</strong>
-        </span>
-      </div>
+      {/* PAGE TITLE */}
+      <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
+        💳 Student Fee Overview
+      </h2>
 
-      {/* Summary Cards */}
+      {/* SUMMARY CARDS */}
       <div className="grid md:grid-cols-3 gap-6">
+        {/* TOTAL DUE */}
         <motion.div
-          whileHover={{ scale: 1.03 }}
-          className="p-6 rounded-2xl bg-gradient-to-br from-rose-50 to-rose-100 dark:from-rose-900/30 dark:to-rose-900/10 border border-rose-100 dark:border-rose-800 shadow"
+          whileHover={{ scale: 1.02 }}
+          className="p-6 rounded-2xl bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-900/10 border shadow"
         >
-          <div className="text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-gray-600 dark:text-gray-300 text-sm">
             Outstanding Balance
-          </div>
-          <div className="text-4xl font-bold text-rose-600 dark:text-rose-400 mt-1">
+          </p>
+          <h3 className="text-3xl font-bold text-red-600 dark:text-red-400">
             Rs. {totalDue}
-          </div>
-          <div className="mt-3 text-xs text-gray-500 flex items-center gap-2">
-            <FiInfo /> Tuition + Lab + Library
-          </div>
+          </h3>
+          <p className="text-xs flex items-center gap-2 text-gray-500 mt-2">
+            <FiInfo /> Tuition + Transportation + Library
+          </p>
         </motion.div>
 
+        {/* LAST PAYMENT */}
         <motion.div
-          whileHover={{ scale: 1.03 }}
-          className="p-6 rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-100 dark:from-emerald-900/20 dark:to-teal-900/10 border border-emerald-100 dark:border-emerald-800 shadow"
+          whileHover={{ scale: 1.02 }}
+          className="p-6 rounded-2xl bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-900/10 border shadow"
         >
-          <div className="text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-gray-600 text-sm dark:text-gray-400">
             Last Payment
-          </div>
-          <div className="text-4xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">
-            Rs. 2,500
-          </div>
-          <div className="mt-3 text-xs text-gray-500">
-            Aug 10, 2025 • via Khalti
-          </div>
+          </p>
+          <h3 className="text-3xl font-bold text-green-600 dark:text-green-400">
+            Rs. {lastPaid?.amount || 0}
+          </h3>
+          <p className="text-xs text-gray-500 mt-2">
+            {lastPaid?.paid_at
+              ? new Date(lastPaid.paid_at).toLocaleDateString()
+              : "No payment yet"}
+          </p>
         </motion.div>
 
+        {/* TOTAL FEES */}
         <motion.div
-          whileHover={{ scale: 1.03 }}
-          className="p-6 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/10 border border-blue-100 dark:border-indigo-800 shadow"
+          whileHover={{ scale: 1.02 }}
+          className="p-6 rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-900/10 border shadow"
         >
-          <div className="text-sm text-gray-500 dark:text-gray-400">
-            Concessions
-          </div>
-          <div className="text-4xl font-bold text-blue-600 dark:text-blue-400 mt-1">
-            Rs. 500
-          </div>
-          <div className="mt-3 text-xs text-gray-500">
-            Merit-based Scholarship
-          </div>
+          <p className="text-gray-600 text-sm dark:text-gray-300">
+            Total Assigned Fees
+          </p>
+          <h3 className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+            Rs. {fees.reduce((sum, f) => sum + f.amount, 0)}
+          </h3>
         </motion.div>
       </div>
 
-      {/* Fee Table */}
+      {/* TABLE */}
       <motion.div
         whileHover={{ y: -2 }}
-        className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow border border-gray-100 dark:border-slate-700"
+        className="bg-white dark:bg-slate-800 rounded-2xl shadow p-6 border"
       >
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold text-lg text-gray-800 dark:text-gray-100 flex items-center gap-2">
-            Monthly Fee Status
-            <FiTrendingUp className="text-cyan-500" />
-          </h3>
-          <span className="text-sm text-gray-400 dark:text-gray-500">
-            Updated: Oct 2025
-          </span>
-        </div>
+        <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-100">
+          Monthly Fee Records
+        </h3>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
-            <thead className="bg-gray-50 dark:bg-slate-700/60">
+            <thead className="bg-gray-100 dark:bg-slate-700/70">
               <tr>
-                <th className="p-3 text-sm font-semibold text-gray-600 dark:text-gray-300">
-                  Month
-                </th>
-                <th className="p-3 text-sm font-semibold text-gray-600 dark:text-gray-300">
-                  Amount
-                </th>
-                <th className="p-3 text-sm font-semibold text-gray-600 dark:text-gray-300">
-                  Status
-                </th>
-                <th className="p-3 text-sm font-semibold text-gray-600 dark:text-gray-300">
-                  Mode
-                </th>
-                <th className="p-3 text-sm font-semibold text-gray-600 dark:text-gray-300">
-                  Actions
-                </th>
+                <th className="p-3">Due Date</th>
+                <th className="p-3">Amount</th>
+                <th className="p-3">Status</th>
+                <th className="p-3">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {dues.map((d, index) => (
-                <motion.tr
-                  key={d.month}
-                  whileHover={{ scale: 1.01, backgroundColor: "#f9fafb" }}
-                  transition={{ duration: 0.2 }}
-                  className={`border-t dark:border-slate-700 ${
-                    index % 2 ? "bg-gray-50/30 dark:bg-slate-900/20" : ""
-                  }`}
+              {fees.map((f) => (
+                <tr
+                  key={f.fee_id}
+                  className="border-t border-gray-200 dark:border-slate-700"
                 >
-                  <td className="p-3">{d.month}</td>
-                  <td className="p-3 font-semibold text-gray-800 dark:text-gray-200">
-                    Rs. {d.amount}
+                  <td className="p-3">
+                    {new Date(f.due_date).toLocaleDateString()}
                   </td>
+
+                  <td className="p-3 font-semibold">Rs. {f.amount}</td>
+
                   <td className="p-3">
                     <span
-                      className={`px-3 py-1 rounded-lg text-sm font-medium ${
-                        d.status === "Paid"
-                          ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
-                          : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+                      className={`px-3 py-1 rounded-full text-sm font-medium ${
+                        f.status === "Paid"
+                          ? "bg-green-100 text-green-700"
+                          : "bg-yellow-100 text-yellow-700"
                       }`}
                     >
-                      {d.status}
+                      {f.status}
                     </span>
                   </td>
-                  <td className="p-3 text-gray-700 dark:text-gray-300">
-                    {d.mode}
-                  </td>
-                  <td className="p-3 flex flex-wrap gap-2">
-                    {d.status === "Unpaid" ? (
+
+                  <td className="p-3 flex gap-3">
+                    {f.status === "Unpaid" ? (
                       <motion.button
-                        whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
-                        onClick={() => pay(d.month)}
-                        className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 text-white text-sm font-medium shadow hover:shadow-md"
+                        onClick={() => payNow(f.fee_id)}
+                        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-lg shadow"
                       >
                         <FiCreditCard /> Pay Now
                       </motion.button>
                     ) : (
                       <motion.button
-                        whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
-                        onClick={() => receipt(d.month)}
-                        className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-300 text-sm font-medium hover:bg-gray-50 dark:hover:bg-slate-700/40"
+                        className="flex items-center gap-2 px-4 py-2 border rounded-lg dark:border-gray-500"
                       >
                         <FiDownload /> Receipt
                       </motion.button>
                     )}
                   </td>
-                </motion.tr>
+                </tr>
               ))}
+
+              {fees.length === 0 && (
+                <tr>
+                  <td className="p-4 text-center text-gray-500" colSpan="4">
+                    No fee records found.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

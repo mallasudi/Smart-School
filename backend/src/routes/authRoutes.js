@@ -12,7 +12,7 @@ import { verifyToken } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// 🔓 Public auth endpoints
+// Public auth endpoints
 router.post("/login", login);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password/:token", resetPassword);
@@ -20,7 +20,7 @@ router.post("/reset-password/:token", resetPassword);
 // Parent self-registration (Student ID + DOB)
 router.post("/register-parent", registerParent);
 
-// 🔐 Protected auth endpoint
+//  Protected auth endpoint
 router.post("/change-password", verifyToken, changePassword);
 
 export default router;

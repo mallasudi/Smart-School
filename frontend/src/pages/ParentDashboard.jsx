@@ -48,7 +48,7 @@ export default function ParentDashboard() {
 
   const renderPage = () => {
     switch (active) {
-      case "children": return <ParentChildren />;
+      
       case "attendance": return <ParentAttendance />;
       case "results": return <ParentResults />;
       case "fees": return <ParentFees />;
@@ -181,7 +181,6 @@ export default function ParentDashboard() {
         <nav className="space-y-3">
           {[
             ["dashboard", "Dashboard"],
-            ["children", "Children"],
             ["attendance", "Attendance"],
             ["results", "Results"],
             ["fees", "Fees"],

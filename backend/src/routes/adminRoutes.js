@@ -1,4 +1,5 @@
 // backend/src/routes/adminRoutes.js
+import { prisma } from "../utils/prisma.js";
 import express from "express";
 import {
   getUsers,
@@ -36,6 +37,12 @@ import {
   adminListSurveyFeedback,
 } from "../controllers/surveyFeedbackController.js";
 
+import {
+  adminMonthlyAttendance,
+  adminClassAttendance,
+  adminLatestAttendance
+} from "../controllers/adminAttendanceController.js";
+
 
 /* -------------------- NOTICES -------------------- */
 import {
@@ -44,6 +51,8 @@ import {
   adminUpdateNotice,
   adminDeleteNotice
 } from "../controllers/noticeController.js";
+
+import { createFee, adminListFees } from "../controllers/feeController.js";
 
 
 const router = express.Router();
@@ -92,5 +101,36 @@ router.get("/feedback/messages", adminListFeedbackMessages);
 
 // Admin → view all survey feedback
 router.get("/feedback/surveys", adminListSurveyFeedback);
+
+// ADMIN ATTENDANCE API
+router.get("/attendance/monthly", adminMonthlyAttendance);
+router.get("/attendance/classes", adminClassAttendance);
+router.get("/attendance/latest", adminLatestAttendance);
+
+// FEES
+router.post("/fees", createFee);
+router.get("/fees", adminListFees);
+
+// GET ALL STUDENTS (for fee assignment)
+router.get("/students", async (req, res) => {
+  try {
+    const list = await prisma.student.findMany({
+      include: { user: true },
+    });
+
+    res.json(
+      list.map((s) => ({
+        student_id: s.student_id,
+        first_name: s.first_name,
+        last_name: s.last_name,
+        class: s.class,
+      }))
+    );
+  } catch (err) {
+    console.error("LOAD STUDENTS ERROR:", err);
+    res.status(500).json({ message: "Failed to load students" });
+  }
+});
+
 
 export default router;
