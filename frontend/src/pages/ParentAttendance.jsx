@@ -21,9 +21,9 @@ export default function ParentAttendance() {
   const [records, setRecords] = useState([]); // daily attendance
   const [query, setQuery] = useState("");
 
-  /* ============================================================
+  /* 
       LOAD ATTENDANCE FOR LINKED CHILD
-  ============================================================ */
+  */
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -51,9 +51,9 @@ export default function ParentAttendance() {
     loadData();
   }, [token]);
 
-  /* ============================================================
+  /* 
       FILTER SEARCH (Date or Status)
-  ============================================================ */
+  */
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return records;
@@ -64,9 +64,9 @@ export default function ParentAttendance() {
     );
   }, [query, records]);
 
-  /* ============================================================
+  /* 
       STATUS DISTRIBUTION
-  ============================================================ */
+  */
   const statusCount = useMemo(() => {
     return {
       Present: records.filter((r) => r.status === "Present").length,
@@ -75,9 +75,9 @@ export default function ParentAttendance() {
     };
   }, [records]);
 
-  /* ============================================================
+  /* 
       WEEKLY TREND - Simple example
-  ============================================================ */
+   */
   const weeklyTrend = [
     { wk: "Wk1", percent: 1 },
     { wk: "Wk2", percent: 1 },
