@@ -1,9 +1,9 @@
 // backend/src/controllers/parentResultController.js
 import { prisma } from "../utils/prisma.js";
 
-/* ===========================================================
+/* 
    HELPER: CALCULATE GRADE FROM PERCENT USING gradeScale TABLE
-=========================================================== */
+ */
 const loadGradeScaleAndMakeCalc = async () => {
   const gradescale = await prisma.gradescale.findMany();
 
@@ -18,11 +18,11 @@ const loadGradeScaleAndMakeCalc = async () => {
   return calcGrade;
 };
 
-/* ===========================================================
+/* 
    1. PARENT: ALL RESULTS (NO TERM FILTER)
    GET /parent/results
    -> Used by ParentResults.jsx
-=========================================================== */
+ */
 export const parentGetResults = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -139,11 +139,11 @@ export const parentGetResults = async (req, res) => {
   }
 };
 
-/* ===========================================================
+/* 
    2. PARENT: TERM-WISE RESULTS
    GET /parent/results/term/:term
    -> Used by ParentTermResults.jsx (new)
-=========================================================== */
+ */
 export const parentGetTermResult = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -263,6 +263,6 @@ export const parentGetTermResult = async (req, res) => {
     });
   } catch (err) {
     console.error("PARENT TERM RESULT ERROR:", err);
-    return res.status(500).json({ message: "Failed to load term result" });
+    return res.status(500).json({ message: "Failed to load the term result" });
   }
 };
