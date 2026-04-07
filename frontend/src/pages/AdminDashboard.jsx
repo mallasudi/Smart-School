@@ -60,7 +60,7 @@ const StatCard = ({ icon: Icon, label, value, accent="from-cyan-500 to-blue-600"
 )
 
 
-// ---------- dummy data ----------
+//  dummy data 
 const feesTrend = [
   { month: "Jan", collected: 10.5 }, { month: "Feb", collected: 12.1 },
   { month: "Mar", collected: 11.2 }, { month: "Apr", collected: 13.6 },
