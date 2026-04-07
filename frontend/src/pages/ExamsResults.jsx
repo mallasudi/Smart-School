@@ -31,7 +31,7 @@ export default function ExamsAdmin() {
   const [selectedSubjectId, setSelectedSubjectId] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // ================= FETCH EXAMS =================
+  //  FETCH EXAMS 
   const loadExams = async () => {
     if (!token) return;
     try {
@@ -51,7 +51,7 @@ export default function ExamsAdmin() {
     }
   };
 
-  // ================= FETCH SUBJECTS =================
+  //  FETCH SUBJECTS 
   const loadSubjects = async () => {
     if (!token) return;
     try {
@@ -88,7 +88,7 @@ export default function ExamsAdmin() {
     (s) => String(s.subject_id) === selectedSubjectId
   );
 
-  // ================= STATS =================
+  //  STATS 
   const stats = [
     {
       label: "Total Exams",
@@ -117,7 +117,7 @@ export default function ExamsAdmin() {
     { class: "Class 4", average: 85 },
   ];
 
-  // ================= SAVE (CREATE / UPDATE) =================
+  // SAVE (CREATE / UPDATE) 
   const handleSave = async (e) => {
     e.preventDefault();
     if (!token) {
@@ -184,7 +184,7 @@ export default function ExamsAdmin() {
     }
   };
 
-  // ================= DELETE =================
+  //  DELETE 
   const handleDelete = async (id) => {
     if (!token) return;
     if (!window.confirm("Are you sure you want to delete this exam?")) return;
