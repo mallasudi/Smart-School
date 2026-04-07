@@ -27,7 +27,7 @@ export default function StudentSettings() {
 
   const [notif, setNotif] = useState(true);
 
-  /* ---------------- FETCH PROFILE ---------------- */
+  /*  FETCH PROFILE  */
   useEffect(() => {
     if (!token) return;
 
@@ -60,7 +60,7 @@ export default function StudentSettings() {
     fetchProfile();
   }, [token]);
 
-  /* ---------------- SAVE PROFILE ---------------- */
+  /*  SAVE PROFILE  */
   const save = async (e) => {
     e.preventDefault();
 
@@ -94,9 +94,9 @@ export default function StudentSettings() {
     }
   };
 
-  /* ======================================================
+  /* 
       🔐 PASSWORD CHANGE SECTION
-  ====================================================== */
+  */
   const [pw, setPw] = useState({
     oldPassword: "",
     newPassword: "",
@@ -145,7 +145,7 @@ export default function StudentSettings() {
 
   return (
     <div className="space-y-6">
-      {/* ---------------- PROFILE ---------------- */}
+      {/*  PROFILE  */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -239,7 +239,7 @@ export default function StudentSettings() {
         </form>
       </motion.div>
 
-      {/* ---------------- PASSWORD CHANGE ---------------- */}
+      {/*  PASSWORD CHANGE  */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -290,7 +290,7 @@ export default function StudentSettings() {
         </form>
       </motion.div>
 
-      {/* ---------------- PREFERENCES ---------------- */}
+      {/*  PREFERENCES  */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
