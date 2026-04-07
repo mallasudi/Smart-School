@@ -23,7 +23,7 @@ export const getUsers = async (req, res) => {
       },
     });
 
-    // admin लाई table बाट लुकाउने (manage users मा नदेखाउन)
+    // filter out admins and normalize role/status
     const filtered = rawUsers.filter(
       (u) => (u.role || "").toLowerCase() !== "admin"
     );
@@ -74,7 +74,7 @@ export const addUser = async (req, res) => {
         .json({ message: "Admin can only create Teacher or Student" });
     }
 
-    // ✅ Student create गर्दा class_id अनिवार्य
+    // class_id is required when creating a student, but not for teacher
     if (roleLower === "student" && !class_id) {
       return res
         .status(400)
@@ -126,7 +126,7 @@ export const addUser = async (req, res) => {
           gender: gender || null,
           phone: phone || null,
           address: address || null,
-          // 🔥 MAIN POINT: class_id DB मा save हुन्छ
+        
           class_id: class_id ? Number(class_id) : null,
           parent_id: null,
         },
