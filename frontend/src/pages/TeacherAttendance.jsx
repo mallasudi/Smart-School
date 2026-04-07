@@ -14,9 +14,9 @@ export default function TeacherAttendance() {
 
   const [subjectName, setSubjectName] = useState(""); // just for display
 
-  /* -----------------------------------------
+  /* 
        LOAD TEACHER PROFILE → SUBJECT NAME
-  ------------------------------------------*/
+  */
   useEffect(() => {
     const loadTeacherProfile = async () => {
       try {
@@ -35,9 +35,9 @@ export default function TeacherAttendance() {
     loadTeacherProfile();
   }, [token]);
 
-  /* -----------------------------------------
+  /* 
        LOAD TEACHER CLASSES
-  ------------------------------------------*/
+  */
   useEffect(() => {
     const fetchClasses = async () => {
       try {
@@ -56,9 +56,9 @@ export default function TeacherAttendance() {
     fetchClasses();
   }, [token]);
 
-  /* -----------------------------------------
+  /* 
        LOAD STUDENTS + TODAY ATTENDANCE
-  ------------------------------------------*/
+  */
   const loadStudents = async (classId, date = selectedDate) => {
     if (!classId) return;
 
@@ -99,9 +99,9 @@ export default function TeacherAttendance() {
     }
   };
 
-  /* -----------------------------------------
+  /* 
        DATE CHANGE
-  ------------------------------------------*/
+  */
   const handleDateChange = (newDate) => {
     setSelectedDate(newDate);
 
@@ -110,18 +110,18 @@ export default function TeacherAttendance() {
     }
   };
 
-  /* -----------------------------------------
+  /* 
        STATUS CHANGE
-  ------------------------------------------*/
+  */
   const handleStatusChange = (id, newStatus) => {
     setStudents((prev) =>
       prev.map((s) => (s.id === id ? { ...s, status: newStatus } : s))
     );
   };
 
-  /* -----------------------------------------
+  /* 
        SAVE ATTENDANCE
-  ------------------------------------------*/
+  */
   const handleSave = async () => {
     if (!selectedClass) {
       alert("Please select a class first.");
@@ -156,9 +156,9 @@ export default function TeacherAttendance() {
     }
   };
 
-  /* -----------------------------------------
+  /* 
        SUMMARY COUNTS
-  ------------------------------------------*/
+  */
   const presentCount = students.filter((s) => s.status === "Present").length;
   const absentCount = students.filter((s) => s.status === "Absent").length;
   const lateCount = students.filter((s) => s.status === "Late").length;
