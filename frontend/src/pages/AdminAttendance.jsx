@@ -13,9 +13,9 @@ export default function AdminAttendance() {
   const [classReport, setClassReport] = useState([]);
   const [latest, setLatest] = useState([]);
 
-  /* ===============================
+  /* 
         LOAD DATA
-  ================================ */
+   */
   useEffect(() => {
     const loadData = async () => {
       try {
