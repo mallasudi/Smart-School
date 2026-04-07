@@ -13,7 +13,7 @@ import {
 
 const router = express.Router();
 
-// ============ TEACHER ============
+// TEACHER 
 router.post("/mark", verifyToken, requireRole("teacher"), markAttendance);
 
 router.get(
@@ -23,7 +23,7 @@ router.get(
   getTodayAttendanceByClass
 );
 
-// ============ STUDENT ============
+// STUDENT 
 router.get(
   "/student/summary",
   verifyToken,
@@ -38,7 +38,7 @@ router.get(
   getStudentSubjectWiseSummary
 );
 
-// ============ PARENT ============
+//  PARENT 
 router.get(
   "/parent/summary",
   verifyToken,
@@ -46,7 +46,7 @@ router.get(
   getParentChildAttendanceSummary
 );
 
-// ============ ADMIN ============
+// ADMIN 
 router.get(
   "/admin/overview",
   verifyToken,
